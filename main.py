@@ -12,8 +12,8 @@ import requests
 import time
 
 
-from data import get_send_coin_data, get_send_token_data, get_date_range, transaction_analysis, get_dummy_discord_chat
-from visualization import discord_transactions, tokenGraph, genie_registration, coinGraph, discord_member, APT_transactions, discord_transaction_bar, discord_chat_bar
+from data import get_send_coin_data, get_send_token_data, get_date_range, transaction_analysis, get_dummy_discord_chat, get_common_users
+from visualization import discord_transactions, tokenGraph, genie_registration, coinGraph, discord_member, APT_transactions, discord_transaction_bar, discord_chat_bar, common_user_bar, discord_chat_ranking
 from ui_utils import add_bg_from_local, set_page_container_style
 
 TICKER = 'Bruh Bear' # ['Bruh Bear', 'MAVERIC', 'AptosMonkeys']
@@ -61,8 +61,13 @@ with bar_col1:
 with bar_col2:
     st.plotly_chart(discord_chat_bar(get_dummy_discord_chat()))
 
+third_col1, third_col2 = st.columns(2)
 
+with third_col1:
+    st.plotly_chart(common_user_bar(get_common_users(TICKER, SCHEMA)))
 
+with third_col2:
+    st.plotly_chart(discord_chat_ranking())
 
 if 'start_time' in st.session_state:        
     del st.session_state['start_time']

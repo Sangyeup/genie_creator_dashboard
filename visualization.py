@@ -114,8 +114,9 @@ def discord_chat_bar(df):
         }
     fig = px.bar(df, x='day', y ='chat',
                  color_discrete_map=color,
-                color='type', height=280, width=600,
-                labels={'day':'Discord Chat Activity', 'chat':''})
+                color='type', height=350, width=600,
+                labels={'day':'', 'chat':''})
+    fig.update_layout(title='Discord Chat Activity')
     return fig
 
 
@@ -127,11 +128,32 @@ def discord_transaction_bar(df, ticker):
         }
     fig = px.bar(df, x='day', y ='transaction',
                  color_discrete_map=color,
-                color='type', height=280, width=600,
-                labels={'day':'Daily Transaction Count', 'transaction':''})
+                color='type', height=350, width=600,
+                labels={'day':'', 'transaction':''})
+    fig.update_layout(title='Daily Transaction Count')
     return fig
 
+def common_user_bar(df):
+    fig = px.bar(df, x='server', y='percent',
+            height=350, width=600,
+            color_discrete_sequence=['#66FCF1'],
+            labels={'server': '', 'percent': 'Percent (%)'})
+    fig.update_layout(title='Common Users',uniformtext_minsize=4, uniformtext_mode='hide', xaxis={'categoryorder':'total descending'})
+    
+    return fig
 
+def discord_chat_ranking():
+    chat = []
+    for i in range(10):
+        chat.append(int(random.uniform(300, 1000)))
+    chat.sort()
+
+    fig = go.Figure(go.Bar(
+            x=chat,
+            y=['LYVBWQ#5788', 'JCSVYJ#1294', 'ZUGGOL#4281', 'DNMUS#5755', 'FHKUXJ#9924', 'DTHBIT#7173', 'PKLRRD#3544', 'JWGMJO#1145', 'VHASKA#0827', 'AXJKSC#7009'],
+            orientation='h'))
+    fig.update_layout(title='Discord Chat Ranking',height=350, width=600)
+    return fig
 
 def tokenGraph(df, ticker):
     G = nx.from_pandas_edgelist(df, source='sender', target='receiver', edge_attr='token', create_using=nx.MultiDiGraph())

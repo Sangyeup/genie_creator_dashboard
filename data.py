@@ -1,10 +1,10 @@
+import dis
 import re
 from database.CRUD import CRUD
 import datetime as dt
 import pandas as pd
 import numpy as np
 import random
-import openai
 
 
 def get_send_token_data(ticker, schema, user_start, user_end, n):
@@ -105,6 +105,30 @@ def get_dummy_discord_chat():
         
     
     df = pd.DataFrame(dict_new)
+
+    return df
+
+def get_common_users(ticker, schema):
+    crud = CRUD()
+    discord_server_list = ['Aptos Monkeys', 'MAVERIK', 'Aptomingos', 'Pontem Dark Ages', 'The Things', 'Spooks', 'Kreaches']
+    discord_server_list = list(set(discord_server_list) - set([ticker]))
+    sql = "select member from {schema}.server_member where server='{server}'".format(schema=schema,server=ticker)
+    member_list = crud.execute_sql(sql)
+
+    common_dict = {
+        'server': [],
+        'percent': []
+    }
+
+    for server in discord_server_list:
+        # sql = "select member from {schema}.server_member where server='{server}'".format(schema=schema,server=server)
+        # other_member_list = crud.execute_sql(sql)
+        # percent = ((len(set(other_member_list)) - len(set(other_member_list) - set(member_list)))/len(set(other_member_list))) * 100
+        percent = random.uniform(30, 100) 
+        common_dict['server'].append(server)
+        common_dict['percent'].append(percent)
+    
+    df = pd.DataFrame(common_dict) 
 
     return df
 
