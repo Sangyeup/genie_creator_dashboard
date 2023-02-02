@@ -13,14 +13,6 @@ import random
 SCHEMA = 'dummy_2'
 
     
-
-#Code RGB to 16hex
-def base10Tobase16(i):
-    base16 = "%02X" % int(i)
-    return base16    
-def rgb2hex(r, g, b):
-    hex_color = "#" + base10Tobase16(r) + base10Tobase16(g) + base10Tobase16(b)
-    return hex_color
     
 def genie_registration(ticker):
     crud = CRUD()
@@ -154,15 +146,35 @@ def tokenGraph(df, ticker):
 
 
     # Normlization for node size
-    node_size = {key: value * 5 for key, value in dict(G.degree()).items()}
+    node_size = {key: value ** 2 for key, value in dict(G.degree()).items()}
+
+
+    # Color variation
+    flow_dict = {}
+    for i in G.nodes():
+        flow_dict[i] = 0
+    for edge in G.edges():
+        flow_dict[edge[0]] += 1
+        flow_dict[edge[1]] -= 1
+
+    color_dict = {}
+    for i in G.nodes():
+        if flow_dict[i] > 2:
+            color_dict[i] = '#66FCF1'
+        elif flow_dict[i] >= 0:
+            color_dict[i] = '#96AAE3' 
+        elif flow_dict[i] > -2:
+            color_dict[i] = '#C657D5'
+        else:
+            color_dict[i] = '#f705c7'
 
     #Setting up size attribute
     nx.set_node_attributes(G, node_size, 'size')
     nx.set_node_attributes(G, discord_id, 'title')
     nx.set_edge_attributes(G, dict(edge_info), 'title')
     # nx.set_edge_attributes(G, 0, 'weight')
-    nx.set_node_attributes(G, '#66FCF1', 'color')
-    nx.set_edge_attributes(G, '#45A29E', 'color')
+    nx.set_node_attributes(G, color_dict, 'color')
+    nx.set_edge_attributes(G, 'white', 'color')
     # nx.set_edge_attributes(G,'gray','color')
 
     # Initiate PyVis network object
@@ -171,7 +183,7 @@ def tokenGraph(df, ticker):
     token_net.from_nx(G)
 
     # Generate network with specific layout settings
-    token_net.repulsion(node_distance=100, central_gravity=0.2, spring_length=200, spring_strength=0.05, damping=0.5)
+    token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
 
     # Save and read graph as HTML file (on Streamlit Sharing)
     try:
@@ -186,7 +198,7 @@ def tokenGraph(df, ticker):
         HtmlFile = open(f'{path}/pyvis_graph.html', 'r', encoding='utf-8')
 
     # Load HTML file in HTML component for display on Streamlit page
-    components.html(HtmlFile.read(), height=700)
+    components.html(HtmlFile.read(), height=600)
 
 def coinGraph(df, ticker):
     G = nx.from_pandas_edgelist(df, source='sender', target=' receiver', edge_attr=' amount', create_using=nx.MultiDiGraph())
@@ -201,29 +213,52 @@ def coinGraph(df, ticker):
 
 
     # Normlization for node size
-    node_size = {key: value * 5 for key, value in dict(G.degree()).items()}
+    node_size = {key: value *10 for key, value in dict(G.degree()).items()}
+
+    # Color variation
+    flow_dict = {}
+    for i in G.nodes():
+        flow_dict[i] = 0
+    for edge in G.edges():
+        e=list(edge)
+        e.append(0)
+        e=tuple(e)
+        flow_dict[edge[0]] += edge_info[e]
+        flow_dict[edge[1]] -= edge_info[e]
+
+    color_dict = {}
+    for i in G.nodes():
+        if flow_dict[i] > 20000:
+            color_dict[i] = '#66FCF1'
+        elif flow_dict[i] >= 0:
+            color_dict[i] = '#96AAE3' 
+        elif flow_dict[i] > -20000:
+            color_dict[i] = '#C657D5'
+        else:
+            color_dict[i] = '#f705c7'
 
     #Setting up size attribute
     nx.set_node_attributes(G, node_size, 'size')
     nx.set_node_attributes(G, discord_id, 'title')
     nx.set_edge_attributes(G, dict(edge_info), 'title')
     #nx.set_edge_attributes(G, dict(edge_info), 'weight')
-    nx.set_node_attributes(G, '#66FCF1', 'color')
-    nx.set_edge_attributes(G, '#45A29E', 'color')
+    nx.set_node_attributes(G, color_dict, 'color')
+    nx.set_edge_attributes(G, 'white', 'color')
     # nx.set_edge_attributes(G,'gray','color')
 
     # Initiate PyVis network object
-    token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#111111', directed=True, neighborhood_highlight=True)
+    token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#10000000', directed=True, neighborhood_highlight=True)
 
     # Take Networkx graph and translate it to a PyVis graph format
     token_net.from_nx(G)
 
     # Generate network with specific layout settings
-    token_net.repulsion(node_distance=100, central_gravity=0.2, spring_length=100, spring_strength=0.05, damping=0.5)
+    token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
 
     # Save and read graph as HTML file (on Streamlit Sharing)
     try:
         token_net.save_graph(f'coin/{ticker}/pyvis_graph.html')
+        revise_pyvis_html(f'coin/{ticker}/pyvis_graph.html')
         HtmlFile = open(f'coin/{ticker}/pyvis_graph.html', 'r', encoding='utf-8')
 
    # Save and read graph as HTML file (locally)

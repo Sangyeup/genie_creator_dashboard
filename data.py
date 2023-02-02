@@ -4,6 +4,8 @@ import datetime as dt
 import pandas as pd
 import numpy as np
 import random
+import openai
+
 
 def get_send_token_data(ticker, schema, user_start, user_end, n):
     crud = CRUD()

@@ -11,8 +11,9 @@ import datetime as dt
 import requests
 import time
 
+
 from data import get_send_coin_data, get_send_token_data, get_date_range, transaction_analysis, get_dummy_discord_chat
-from visualization import discord_transactions, tokenGraph, genie_registration, coinGraph, temp_sankey, discord_member, APT_transactions, discord_transaction_bar, discord_chat_bar
+from visualization import discord_transactions, tokenGraph, genie_registration, coinGraph, discord_member, APT_transactions, discord_transaction_bar, discord_chat_bar
 from ui_utils import add_bg_from_local, set_page_container_style
 
 TICKER = 'Bruh Bear' # ['Bruh Bear', 'MAVERIC', 'AptosMonkeys']
@@ -21,7 +22,7 @@ isToken = True
 SCHEMA = 'dummy_2'
 
 st.set_page_config(layout="wide", page_title="Genie Creator Dashboard")
-set_page_container_style()
+#set_page_container_style()
 #add_bg_from_local('home.png') 
 
 TICKER = st.selectbox('',
@@ -81,6 +82,10 @@ with st.form("Choose Date range"):
     
     user_start_date = st.date_input(f'Start date: available from {min_date}', min_date, disabled=False, min_value=dt.date(1960, 1, 1))
     user_end_date = st.date_input(f'End date: available until {max_date}', min_date + dt.timedelta(days=2), disabled=False, max_value=dt.date(2023, 12, 31))
+    SELECT_TICKER = st.selectbox('',
+               options=(TICKER, '$APT'),
+               index=0)
+
     date_submitted = st.form_submit_button("Submit")
 
     if date_submitted:
@@ -93,6 +98,7 @@ with st.form("Choose Date range"):
 
         st.session_state['start_time'] = user_start_date
         st.session_state['end_time'] = user_end_date
+        st.session_state['TICKER'] = SELECT_TICKER
 
 
 if 'start_time' in st.session_state and st.session_state['start_time'] != None:
@@ -105,13 +111,13 @@ if 'start_time' in st.session_state and st.session_state['start_time'] != None:
     min_value = 0
     max_value = 0
     
-    if 'isToken' in st.session_state and st.session_state['isToken']==True:
-        df = get_send_token_data(TICKER, SCHEMA, str(user_start_time), str(user_end_time), 60)
+    if 'isToken' in st.session_state and st.session_state['TICKER']==TICKER:
+        df = get_send_token_data(st.session_state['TICKER'], SCHEMA, str(user_start_time), str(user_end_time), 150)
         tokenGraph(df, TICKER)
 
-    elif 'isToken' in st.session_state and st.session_state['isToken']==False:
-        df = get_send_coin_data(TICKER, SCHEMA, str(user_start_time), str(user_end_time), 60)
-        coinGraph(df, TICKER)
+    elif 'isToken' in st.session_state and st.session_state['TICKER']=='$APT':
+        df = get_send_coin_data('APT', SCHEMA, str(user_start_time), str(user_end_time), 150)
+        coinGraph(df, 'APT')
 
 
 # st.header('Related Projects')
