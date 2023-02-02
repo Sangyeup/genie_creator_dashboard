@@ -1,0 +1,7 @@
+psycopg2
+pandas
+numpy
+turtle
+networkx
+pyvis
+plotly
