@@ -12,10 +12,9 @@ import random
 
 SCHEMA = 'dummy_2'
 
-    
+crud = CRUD()
     
 def genie_registration(ticker):
-    crud = CRUD()
     genie_member_count = crud.execute_sql("SELECT COUNT(*) FROM {schema}.server_member WHERE server='{ticker}'".format(schema=SCHEMA,ticker=ticker))
     discord_member_count = crud.execute_sql("SELECT MEMBERS FROM {schema}.discord_server WHERE server='{ticker}'".format(schema=SCHEMA,ticker=ticker))
     fig = go.Figure()
@@ -40,7 +39,6 @@ def genie_registration(ticker):
 
 def discord_member(ticker):
     fig = go.Figure()
-    crud = CRUD()
     discord_member_count = crud.execute_sql("SELECT MEMBERS FROM {schema}.discord_server WHERE server='{ticker}'".format(schema=SCHEMA,ticker=ticker))
     fig.add_trace(go.Indicator(
         value = discord_member_count[0][0],
@@ -62,7 +60,6 @@ def discord_member(ticker):
 
 def discord_transactions(ticker):
     fig = go.Figure()
-    crud = CRUD()
     transaction_count = crud.execute_sql("select count(*) from {schema}.send_token where discord='{ticker}'".format(schema=SCHEMA,ticker=ticker))
     fig.add_trace(go.Indicator(
         value = transaction_count[0][0],
@@ -85,7 +82,6 @@ def discord_transactions(ticker):
 # REVISE NEEDED
 def APT_transactions(ticker):
     fig = go.Figure()
-    crud = CRUD()
     volume = random.uniform(1000, 3000)
     fig.add_trace(go.Indicator(
         value = volume,
@@ -151,7 +147,9 @@ def discord_chat_ranking():
     fig = go.Figure(go.Bar(
             x=chat,
             y=['LYVBWQ#5788', 'JCSVYJ#1294', 'ZUGGOL#4281', 'DNMUS#5755', 'FHKUXJ#9924', 'DTHBIT#7173', 'PKLRRD#3544', 'JWGMJO#1145', 'VHASKA#0827', 'AXJKSC#7009'],
-            orientation='h'))
+            orientation='h',
+            marker = {'color':'#5200ff'}
+            ))
     fig.update_layout(title='Discord Chat Ranking',height=350, width=600)
     return fig
 
@@ -160,7 +158,6 @@ def tokenGraph(df, ticker):
     edge_info=nx.get_edge_attributes(G,'token')
 
     # Make Discord_id dict (Need optimization)
-    crud = CRUD()
     discord_id = {}
     for wallet in G.nodes().keys():
         sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)
@@ -227,7 +224,6 @@ def coinGraph(df, ticker):
     edge_info=nx.get_edge_attributes(G, ' amount')
 
     # Make Discord_id dict (Need optimization)
-    crud = CRUD()
     discord_id = {}
     for wallet in G.nodes().keys():
         sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)

@@ -1,8 +1,9 @@
 import psycopg2
+import streamlit as st
 
 class Databases():
     def __init__(self):
-        self.db = psycopg2.connect(host='localhost', dbname='genie',user='sangsangg',password='postgres')
+        self.db = psycopg2.connect(**st.secrets["postgres"])
         self.cursor = self.db.cursor()
 
     def __del__(self):

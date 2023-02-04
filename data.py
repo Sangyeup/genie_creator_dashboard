@@ -6,20 +6,17 @@ import pandas as pd
 import numpy as np
 import random
 
+crud = CRUD()
 
 def get_send_token_data(ticker, schema, user_start, user_end, n):
-    crud = CRUD()
     sql = " SELECT (sender, receiver, token, tx_timestamp) FROM {schema}.{table} JOIN {schema}.token ON {table}.token=token.name JOIN {schema}.collection ON token.collection=collection.id WHERE collection.collection_name='{ticker}' AND tx_timestamp>='{user_start}' AND tx_timestamp<='{user_end}' LIMIT {n}".format(schema=schema,table='send_token', ticker=ticker, user_start=user_start, user_end=user_end, n=n)
     return crud.get_token_df(sql)
 
 def get_send_coin_data(ticker, schema, user_start, user_end, n):
-    crud = CRUD()
     sql = " SELECT (sender, receiver, amount, tx_timestamp) FROM {schema}.{table} WHERE coin='{ticker}' AND tx_timestamp>='{user_start}' AND tx_timestamp<='{user_end}' ORDER BY amount DESC LIMIT {n}".format(schema=schema,table='send_coin', ticker=ticker, user_start=user_start, user_end=user_end, n=n)
     return crud.get_coin_df(sql)
 
 def get_date_range(ticker, schema, isToken=True):
-    crud = CRUD()
-
     if isToken:
         minsql = "SELECT MIN(tx_timestamp) FROM {schema}.{table} JOIN {schema}.token ON {table}.token=token.name JOIN {schema}.collection ON token.collection=collection.id WHERE collection.collection_name='{ticker}'".format(schema=schema, table="send_token", ticker=ticker)
         maxsql = "SELECT MAX(tx_timestamp) FROM {schema}.{table} JOIN {schema}.token ON {table}.token=token.name JOIN {schema}.collection ON token.collection=collection.id WHERE collection.collection_name='{ticker}'".format(schema=schema, table="send_token", ticker=ticker)
@@ -34,8 +31,6 @@ def get_date_range(ticker, schema, isToken=True):
     return min_date, max_date
 
 def transaction_analysis(ticker, schema):
-    crud = CRUD()
-
     token_sql = "SELECT (tx_timestamp) FROM {schema}.{table} JOIN {schema}.token ON {table}.token=token.name JOIN {schema}.collection ON token.collection=collection.id WHERE collection.collection_name='{ticker}'".format(schema=schema, table='send_token', ticker=ticker)
     coin_sql = "SELECT (tx_timestamp) FROM {schema}.{table} JOIN {schema}.coin ON {table}.coin=coin.coin_type WHERE coin.coin_type='{ticker}'".format(schema=schema, table='send_coin', ticker='APT') 
 
@@ -109,7 +104,6 @@ def get_dummy_discord_chat():
     return df
 
 def get_common_users(ticker, schema):
-    crud = CRUD()
     discord_server_list = ['Aptos Monkeys', 'MAVERIK', 'Aptomingos', 'Pontem Dark Ages', 'The Things', 'Spooks', 'Kreaches']
     discord_server_list = list(set(discord_server_list) - set([ticker]))
     sql = "select member from {schema}.server_member where server='{server}'".format(schema=schema,server=ticker)

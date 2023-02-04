@@ -21,8 +21,10 @@ SERVER = 'Bruh Bears'
 isToken = True
 SCHEMA = 'dummy_2'
 
+
 st.set_page_config(layout="wide", page_title="Genie Creator Dashboard")
-#set_page_container_style()
+st.title('Genie Creator Dashboard')
+set_page_container_style()
 #add_bg_from_local('home.png') 
 
 TICKER = st.selectbox('',
@@ -36,7 +38,6 @@ elif TICKER == 'MAVERIK':
 elif TICKER == 'AptosMonkeys':
     SERVER = 'Aptos Monkeys'
 
-st.title('Genie Creator Dashboard')
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -117,11 +118,11 @@ if 'start_time' in st.session_state and st.session_state['start_time'] != None:
     max_value = 0
     
     if 'isToken' in st.session_state and st.session_state['TICKER']==TICKER:
-        df = get_send_token_data(st.session_state['TICKER'], SCHEMA, str(user_start_time), str(user_end_time), 150)
+        df = get_send_token_data(st.session_state['TICKER'], SCHEMA, str(user_start_time), str(user_end_time), 100)
         tokenGraph(df, TICKER)
 
     elif 'isToken' in st.session_state and st.session_state['TICKER']=='$APT':
-        df = get_send_coin_data('APT', SCHEMA, str(user_start_time), str(user_end_time), 150)
+        df = get_send_coin_data('APT', SCHEMA, str(user_start_time), str(user_end_time), 100)
         coinGraph(df, 'APT')
 
 
