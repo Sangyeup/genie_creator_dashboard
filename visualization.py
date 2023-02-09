@@ -9,6 +9,7 @@ import urllib, json
 import plotly.express as px
 from ui_utils import revise_pyvis_html
 import random
+import streamlit as st
 
 SCHEMA = 'dummy_2'
 
@@ -154,136 +155,139 @@ def discord_chat_ranking():
     return fig
 
 def tokenGraph(df, ticker):
-    G = nx.from_pandas_edgelist(df, source='sender', target='receiver', edge_attr='token', create_using=nx.MultiDiGraph())
-    edge_info=nx.get_edge_attributes(G,'token')
+    with st.spinner("Generating graph, please wait..."):
+        G = nx.from_pandas_edgelist(df, source='sender', target='receiver', edge_attr='token', create_using=nx.MultiDiGraph())
+        edge_info=nx.get_edge_attributes(G,'token')
 
-    # Make Discord_id dict (Need optimization)
-    discord_id = {}
-    for wallet in G.nodes().keys():
-        sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)
-        discord_id[wallet] = crud.execute_sql(sql)[0][0]
-
-
-    # Normlization for node size
-    node_size = {key: value ** 2 for key, value in dict(G.degree()).items()}
+        # Make Discord_id dict (Need optimization)
+        discord_id = {}
+        for wallet in G.nodes().keys():
+            sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)
+            discord_id[wallet] = crud.execute_sql(sql)[0][0]
 
 
-    # Color variation
-    flow_dict = {}
-    for i in G.nodes():
-        flow_dict[i] = 0
-    for edge in G.edges():
-        flow_dict[edge[0]] += 1
-        flow_dict[edge[1]] -= 1
+        # Normlization for node size
+        node_size = {key: value ** 2 for key, value in dict(G.degree()).items()}
 
-    color_dict = {}
-    for i in G.nodes():
-        if flow_dict[i] > 2:
-            color_dict[i] = '#66FCF1'
-        elif flow_dict[i] >= 0:
-            color_dict[i] = '#96AAE3' 
-        elif flow_dict[i] > -2:
-            color_dict[i] = '#C657D5'
-        else:
-            color_dict[i] = '#f705c7'
 
-    #Setting up size attribute
-    nx.set_node_attributes(G, node_size, 'size')
-    nx.set_node_attributes(G, discord_id, 'title')
-    nx.set_edge_attributes(G, dict(edge_info), 'title')
-    # nx.set_edge_attributes(G, 0, 'weight')
-    nx.set_node_attributes(G, color_dict, 'color')
-    nx.set_edge_attributes(G, 'white', 'color')
-    # nx.set_edge_attributes(G,'gray','color')
+        # Color variation
+        flow_dict = {}
+        for i in G.nodes():
+            flow_dict[i] = 0
+        for edge in G.edges():
+            flow_dict[edge[0]] += 1
+            flow_dict[edge[1]] -= 1
 
-    # Initiate PyVis network object
-    token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#10000000', directed=True, neighborhood_highlight=True)
-    # Take Networkx graph and translate it to a PyVis graph format
-    token_net.from_nx(G)
+        color_dict = {}
+        for i in G.nodes():
+            if flow_dict[i] > 2:
+                color_dict[i] = '#66FCF1'
+            elif flow_dict[i] >= 0:
+                color_dict[i] = '#96AAE3' 
+            elif flow_dict[i] > -2:
+                color_dict[i] = '#C657D5'
+            else:
+                color_dict[i] = '#f705c7'
 
-    # Generate network with specific layout settings
-    token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
+        #Setting up size attribute
+        nx.set_node_attributes(G, node_size, 'size')
+        nx.set_node_attributes(G, discord_id, 'title')
+        nx.set_edge_attributes(G, dict(edge_info), 'title')
+        # nx.set_edge_attributes(G, 0, 'weight')
+        nx.set_node_attributes(G, color_dict, 'color')
+        nx.set_edge_attributes(G, 'white', 'color')
+        # nx.set_edge_attributes(G,'gray','color')
 
-    # Save and read graph as HTML file (on Streamlit Sharing)
-    try:
-        token_net.save_graph(f'token/{ticker}/pyvis_graph.html')
-        revise_pyvis_html(f'token/{ticker}/pyvis_graph.html')
-        HtmlFile = open(f'token/{ticker}/pyvis_graph.html', 'r', encoding='utf-8')
+        # Initiate PyVis network object
+        token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#10000000', directed=True, neighborhood_highlight=True)
+        # Take Networkx graph and translate it to a PyVis graph format
+        token_net.from_nx(G)
 
-   # Save and read graph as HTML file (locally)
-    except:
-        path = '/html_files'
-        token_net.save_graph(f'{path}/pyvis_graph.html')
-        HtmlFile = open(f'{path}/pyvis_graph.html', 'r', encoding='utf-8')
+        # Generate network with specific layout settings
+        token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
+
+        # Save and read graph as HTML file (on Streamlit Sharing)
+        try:
+            token_net.save_graph(f'token/{ticker}/pyvis_graph.html')
+            revise_pyvis_html(f'token/{ticker}/pyvis_graph.html')
+            HtmlFile = open(f'token/{ticker}/pyvis_graph.html', 'r', encoding='utf-8')
+
+    # Save and read graph as HTML file (locally)
+        except:
+            path = '/html_files'
+            token_net.save_graph(f'{path}/pyvis_graph.html')
+            HtmlFile = open(f'{path}/pyvis_graph.html', 'r', encoding='utf-8')
 
     # Load HTML file in HTML component for display on Streamlit page
     components.html(HtmlFile.read(), height=600)
 
 def coinGraph(df, ticker):
-    G = nx.from_pandas_edgelist(df, source='sender', target=' receiver', edge_attr=' amount', create_using=nx.MultiDiGraph())
-    edge_info=nx.get_edge_attributes(G, ' amount')
+    with st.spinner("Generating graph, please wait..."):
+        spinner = st.spinner("Generating graph, please wait...")
+        G = nx.from_pandas_edgelist(df, source='sender', target=' receiver', edge_attr=' amount', create_using=nx.MultiDiGraph())
+        edge_info=nx.get_edge_attributes(G, ' amount')
 
-    # Make Discord_id dict (Need optimization)
-    discord_id = {}
-    for wallet in G.nodes().keys():
-        sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)
-        discord_id[wallet] = crud.execute_sql(sql)[0][0]
+        # Make Discord_id dict (Need optimization)
+        discord_id = {}
+        for wallet in G.nodes().keys():
+            sql = " SELECT {colum} FROM {schema}.{table} WHERE address='{address}'".format(schema=SCHEMA,table='wallet',colum='discord_id',address=wallet)
+            discord_id[wallet] = crud.execute_sql(sql)[0][0]
 
 
-    # Normlization for node size
-    node_size = {key: value *10 for key, value in dict(G.degree()).items()}
+        # Normlization for node size
+        node_size = {key: value *10 for key, value in dict(G.degree()).items()}
 
-    # Color variation
-    flow_dict = {}
-    for i in G.nodes():
-        flow_dict[i] = 0
-    for edge in G.edges():
-        e=list(edge)
-        e.append(0)
-        e=tuple(e)
-        flow_dict[edge[0]] += edge_info[e]
-        flow_dict[edge[1]] -= edge_info[e]
+        # Color variation
+        flow_dict = {}
+        for i in G.nodes():
+            flow_dict[i] = 0
+        for edge in G.edges():
+            e=list(edge)
+            e.append(0)
+            e=tuple(e)
+            flow_dict[edge[0]] += edge_info[e]
+            flow_dict[edge[1]] -= edge_info[e]
 
-    color_dict = {}
-    for i in G.nodes():
-        if flow_dict[i] > 20000:
-            color_dict[i] = '#66FCF1'
-        elif flow_dict[i] >= 0:
-            color_dict[i] = '#96AAE3' 
-        elif flow_dict[i] > -20000:
-            color_dict[i] = '#C657D5'
-        else:
-            color_dict[i] = '#f705c7'
+        color_dict = {}
+        for i in G.nodes():
+            if flow_dict[i] > 20000:
+                color_dict[i] = '#66FCF1'
+            elif flow_dict[i] >= 0:
+                color_dict[i] = '#96AAE3' 
+            elif flow_dict[i] > -20000:
+                color_dict[i] = '#C657D5'
+            else:
+                color_dict[i] = '#f705c7'
 
-    #Setting up size attribute
-    nx.set_node_attributes(G, node_size, 'size')
-    nx.set_node_attributes(G, discord_id, 'title')
-    nx.set_edge_attributes(G, dict(edge_info), 'title')
-    #nx.set_edge_attributes(G, dict(edge_info), 'weight')
-    nx.set_node_attributes(G, color_dict, 'color')
-    nx.set_edge_attributes(G, 'white', 'color')
-    # nx.set_edge_attributes(G,'gray','color')
+        #Setting up size attribute
+        nx.set_node_attributes(G, node_size, 'size')
+        nx.set_node_attributes(G, discord_id, 'title')
+        nx.set_edge_attributes(G, dict(edge_info), 'title')
+        #nx.set_edge_attributes(G, dict(edge_info), 'weight')
+        nx.set_node_attributes(G, color_dict, 'color')
+        nx.set_edge_attributes(G, 'white', 'color')
+        # nx.set_edge_attributes(G,'gray','color')
 
-    # Initiate PyVis network object
-    token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#10000000', directed=True, neighborhood_highlight=True)
+        # Initiate PyVis network object
+        token_net = Network(height='700px', width=1270, bgcolor='#111111', font_color='#10000000', directed=True, neighborhood_highlight=True)
 
-    # Take Networkx graph and translate it to a PyVis graph format
-    token_net.from_nx(G)
+        # Take Networkx graph and translate it to a PyVis graph format
+        token_net.from_nx(G)
 
-    # Generate network with specific layout settings
-    token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
+        # Generate network with specific layout settings
+        token_net.repulsion(node_distance=500, central_gravity=0.2, spring_length=100, spring_strength=0.01, damping=0.95)
 
-    # Save and read graph as HTML file (on Streamlit Sharing)
-    try:
-        token_net.save_graph(f'coin/{ticker}/pyvis_graph.html')
-        revise_pyvis_html(f'coin/{ticker}/pyvis_graph.html')
-        HtmlFile = open(f'coin/{ticker}/pyvis_graph.html', 'r', encoding='utf-8')
+        # Save and read graph as HTML file (on Streamlit Sharing)
+        try:
+            token_net.save_graph(f'coin/{ticker}/pyvis_graph.html')
+            revise_pyvis_html(f'coin/{ticker}/pyvis_graph.html')
+            HtmlFile = open(f'coin/{ticker}/pyvis_graph.html', 'r', encoding='utf-8')
 
-   # Save and read graph as HTML file (locally)
-    except:
-        path = '/html_files'
-        token_net.save_graph(f'{path}/pyvis_graph.html')
-        HtmlFile = open(f'{path}/pyvis_graph.html', 'r', encoding='utf-8')
+    # Save and read graph as HTML file (locally)
+        except:
+            path = '/html_files'
+            token_net.save_graph(f'{path}/pyvis_graph.html')
+            HtmlFile = open(f'{path}/pyvis_graph.html', 'r', encoding='utf-8')
 
     # Load HTML file in HTML component for display on Streamlit page
     components.html(HtmlFile.read(), height=700)
